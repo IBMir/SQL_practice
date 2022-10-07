@@ -177,15 +177,3 @@ create table comments(
 
 alter table likes add constraint
 foreign key (comments_id) references comments(id);
-
-
-
-
-
-
-
-
-
-
-
-
