@@ -15,10 +15,25 @@ create table games( -- игры
 	is_active bit default 1 -- является ли активной
 );
 
+drop table if exists genre;
+create table genre( -- жанр игры
+	id serial, -- уникальный номер жанра
+	title varchar(100) unique not null -- наименование жанра
+);
+
+drop table if exists games_genre;
+create table games_genre(
+	games_id bigint unsigned not null,
+	genre_id bigint unsigned not null,
+	
+	foreign key (games_id) references games(id),
+	foreign key (genre_id) references genre(id)
+);
+
 drop table if exists media_types;
 create table media_types( -- тип медиа
 	id serial, -- уникальный номер типа
-	name varchar(50) -- один из типов: poster, video_trailer, video_review (обзор), screenshot и др.
+	name varchar(50) unique not null -- один из типов: poster, video_trailer, video_review (обзор), screenshot и др.
 );
 
 drop table if exists media;
