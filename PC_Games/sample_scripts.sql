@@ -91,5 +91,3 @@ create procedure all_information_about_the_game(in title_games varchar(100))
 delimiter ;
 
 call all_information_about_the_game('Название игры');
-
-
