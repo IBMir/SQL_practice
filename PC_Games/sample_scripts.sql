@@ -37,7 +37,7 @@ on voiceover_language.games_id = games.id and voiceover_language.language_id = 1
 -- Представление запроса на основные данные активных (не заблокированных) игр.
 
 create view basic_game_data as
-	select g.title 'Название', g.release_date 'Дата выпуска', s.title 'Серия', d.title 'Разработчик', gdes.body 'Описание', g.download_link 'Ссылка для скачивания'
+	select g.id 'Уникальный_номер', g.title 'Название', g.release_date 'Дата_выпуска', s.title 'Серия', d.title 'Разработчик', gdes.body 'Описание', g.download_link 'Ссылка_для_скачивания'
 	from games g 
 	left join series s 
 	on g.series_id = s.id  
@@ -46,8 +46,8 @@ create view basic_game_data as
 	inner join developer d 
 	on gd.developer_id = d.id 
 	inner join game_description gdes 
-	on g.id = gdes.games_id 
-	where is_active = 1;
+	on g.id = gdes.games_id
+	order by g.id;
 
 select * from basic_game_data;
 
@@ -61,5 +61,33 @@ group by u.id
 order by count(c.id) desc
 limit 3;
 
+-- Процедура выводит всю информацию о конкретной игре по ее названию.
+
+drop procedure if exists all_information_about_the_game;
+
+delimiter ||
+
+create procedure all_information_about_the_game(in title_games varchar(100))
+	begin
+		set @count_g = (select count(*) from basic_game_data where Название like concat ('%', title_games, '%'));
+		if (@count_g = 1) then
+			select * from basic_game_data where Название like concat ('%', title_games, '%');
+			set @id_g = (select Уникальный_номер from basic_game_data where Название like concat ('%', title_games, '%'));
+			select title 'Жанры' from genre g
+				join games_genre gg  on g.id = gg.genre_id and gg.games_id = @id_g;
+			select mt.name, m.name, m.link from media m 
+				join media_types mt on mt.id = m.media_types_id and m.games_id = @id_g;
+		elseif (@count_g > 1) then
+			select 'Найдено более одной игры, уточните запрос.'
+			union
+			select Название from basic_game_data where Название like concat ('%', title_games, '%'); 
+		else
+			select 'По вашему запросу игр не найдено.';
+		end if;
+	end ||
+	
+delimiter ;
+
+call all_information_about_the_game('Название игры');
 
 
